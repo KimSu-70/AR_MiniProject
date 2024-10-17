@@ -16,7 +16,7 @@ public class AudioManager : MonoBehaviour
     AudioSource[] sfxPlayers;
     int channelIndex;
 
-    public enum Sfx { Coin, SpinDash, SpringFootrest, Hit, MonsterDead, GameOver, TimeOver }
+    public enum Sfx { Clicks, Bullet, Food, Roll, Spin, Christell, Fear, Bounce, Food2, Dead }
 
     private void Awake()
     {
@@ -81,6 +81,16 @@ public class AudioManager : MonoBehaviour
             sfxPlayers[loopIndex].clip = sfxClips[(int)sfx];
             sfxPlayers[loopIndex].Play();
             break;
+        }
+    }
+    public void StopSfx()
+    {
+        for (int i = 0; i < sfxPlayers.Length; i++)
+        {
+            if (sfxPlayers[i].isPlaying)
+            {
+                sfxPlayers[i].Stop();
+            }
         }
     }
 }

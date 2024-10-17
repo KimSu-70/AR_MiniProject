@@ -1,8 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -13,13 +9,16 @@ public class UIManager : MonoBehaviour
     public Slider hungers;
     public Slider happys;
 
+
     [SerializeField] CatController cat;
+    [SerializeField] GameObject mirrorBall;
 
     private void Start()
     {
         Application.targetFrameRate = 60;
         //cat.OnDied += GameOver;
         AudioManager.Instance.PlayBgm(true);
+        mirrorBall.SetActive(false);
     }
 
     private void Awake()
@@ -47,18 +46,16 @@ public class UIManager : MonoBehaviour
         hungers.value = hunger; // 현재 배고픔
         happys.value = happy;   // 현재 행복
     }
-    //public void PlayerLife()
-    //{
-    //    if (playerLife > 0)
-    //    {
-    //        playerLife--;
-    //        playerLifeText.text = playerLife.ToString();
-    //        cat.Respawn();
-    //    }
-    //    else if (playerLife == 0) // 생명이 0이 되었을 때 게임 오버
-    //    {
-    //        AudioManager.Instance.PlaySfx(AudioManager.Sfx.GameOver);
-    //        GameOver(); // 게임 오버 UI 호출
-    //    }
-    //}
+
+    public void SetMirrorBall()
+    {
+        if (mirrorBall.activeSelf)
+        {
+            mirrorBall.SetActive(false); // 비활성화
+        }
+        else
+        {
+            mirrorBall.SetActive(true); // 활성화
+        }
+    }
 }

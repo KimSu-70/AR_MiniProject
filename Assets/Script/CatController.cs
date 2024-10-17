@@ -111,12 +111,15 @@ public class CatController : MonoBehaviour
         public override void Enter()
         {
             cat.animator.Play("IdleS");
-            
+            AudioManager.Instance.PlayBgm(false);
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Christell);
         }
 
         public override void Exit()
         {
-            
+            cat.hunger -= 10;
+            AudioManager.Instance.StopSfx();
+            AudioManager.Instance.PlayBgm(true);
         }
     }
 
@@ -140,6 +143,7 @@ public class CatController : MonoBehaviour
             if (cat.animator.GetCurrentAnimatorStateInfo(0).IsName("Food") &&
                 cat.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1.0f)
             {
+                AudioManager.Instance.PlaySfx(AudioManager.Sfx.Food);
                 cat.ChangeState(State.Jump); // 애니메이션이 끝나면 Jump 상태로 전환
             }
         }
@@ -186,6 +190,7 @@ public class CatController : MonoBehaviour
         public override void Enter()
         {
             cat.animator.Play("Fear");
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Fear);
             if (!isRunning)
             {
                 isRunning = true;
@@ -214,6 +219,7 @@ public class CatController : MonoBehaviour
         public override void Enter()
         {
             cat.animator.Play("Click");
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Clicks);
             if (!isRunning)
             {
                 isRunning = true;
@@ -243,6 +249,8 @@ public class CatController : MonoBehaviour
         public override void Enter()
         {
             cat.animator.Play("Spin");
+            cat.hunger -= 5;
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Spin);
             if (!isRunning)
             {
                 isRunning = true;
@@ -272,6 +280,8 @@ public class CatController : MonoBehaviour
         public override void Enter()
         {
             cat.animator.Play("Roll");
+            cat.hunger -= 5;
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Roll);
             if (!isRunning)
             {
                 isRunning = true;
@@ -349,32 +359,39 @@ public class CatController : MonoBehaviour
 
     private void MoveToFood()
     {
-        // 음식 방향으로 이동
-        animator.Play("Run");
-        Vector3 direction = (targetFood.position - transform.position).normalized;
-        transform.position += direction * moveSpeed * Time.deltaTime;
-
-        // 음식에 도착했는지 확인
-        if (Vector3.Distance(transform.position, targetFood.position) < 0.5f)
+        if (curState != State.Dead)
         {
-            targetFood = null; // 음식에 도착하면 목표를 없앰
-            ChangeState(State.Food);
+            // 음식 방향으로 이동
+            animator.Play("Run");
+            Vector3 direction = (targetFood.position - transform.position).normalized;
+            transform.position += direction * moveSpeed * Time.deltaTime;
+
+            // 음식에 도착했는지 확인
+            if (Vector3.Distance(transform.position, targetFood.position) < 0.5f)
+            {
+                targetFood = null; // 음식에 도착하면 목표를 없앰
+                AudioManager.Instance.PlaySfx(AudioManager.Sfx.Food2);
+                ChangeState(State.Food);
+            }
         }
     }
     #endregion
     public void UseAegyo()
     {
-        if (hunger > 70 && health > 80 && happy > 70)
+        if (curState != State.Dead && curState != State.Christell)
         {
-            ChangeState(State.Spin);
-        }
-        else if (hunger > 30 && health > 60 && happy > 50)
-        {
-            ChangeState(State.Roll);
-        }
-        else
-        {
-            ChangeState(State.Fear);
+            if (hunger > 70 && health > 70 && happy > 70)
+            {
+                ChangeState(State.Spin);
+            }
+            else if (hunger > 30 && health > 60 && happy > 50)
+            {
+                ChangeState(State.Roll);
+            }
+            else
+            {
+                ChangeState(State.Fear);
+            }
         }
     }
 
@@ -386,13 +403,27 @@ public class CatController : MonoBehaviour
             if (curState != State.Christell)
             {
                 ChangeState(State.Christell);
+                UIManager.Instance.SetMirrorBall();
             }
             else
             {
                 // 현재 Christell 상태라면 Exit 메서드를 호출하여 종료
+                UIManager.Instance.SetMirrorBall();
                 states[(int)curState].Exit();
                 ChangeState(State.Idle); // Idle 상태로 전환
             }
         }
+        else
+        {
+            StartCoroutine(BounceTime());
+            animator.Play("Bounce");
+            AudioManager.Instance.PlaySfx(AudioManager.Sfx.Bounce);
+        }
+    }
+
+    IEnumerator BounceTime()
+    {
+        yield return new WaitForSeconds(0.6f);
+        animator.Play("IdleA");
     }
 }
